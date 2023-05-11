@@ -49,6 +49,8 @@ public class GameManager : MonoBehaviour
         trueAlphaInputEvent += _scoreManager.AddScore;
         _healthManager.gameOverEvent += GameOver;
         saveLoadManager.loadDataEvent += _scoreManager.LoadRecordData;
+        _scoreManager.scoreToNextLevelEvent += _levelManager.LevelUP;
+        _levelManager.levelChangeEvent += uiManager.UpdateLevel;
     }
     private void OnDisable()
     {
@@ -65,6 +67,8 @@ public class GameManager : MonoBehaviour
         trueAlphaInputEvent -= _scoreManager.AddScore;
         _healthManager.gameOverEvent -= GameOver;
         saveLoadManager.loadDataEvent -= _scoreManager.LoadRecordData;
+        _scoreManager.scoreToNextLevelEvent -= _levelManager.LevelUP;
+        _levelManager.levelChangeEvent -= uiManager.UpdateLevel;
     }
     
     private void Start()
@@ -126,16 +130,16 @@ public class GameManager : MonoBehaviour
             iniOK = true;
             InitState();
         }        
-        ChangeState(GetState<MainMenuState>());
-        _scoreManager.Init();
-        controllerSquare.Init(InstantiateSquareForPool(), _parentForPool);
-        saveLoadManager.LoadData();
+        ChangeState(GetState<MainMenuState>());        
+        controllerSquare.Init(InstantiateSquareForPool(), _parentForPool);        
         _healthManager.Init(_startHealth);
     }
 
     public void StartGame()
     {
         _levelManager.Init();
+        _scoreManager.Init();
+        saveLoadManager.LoadData();
         _healthManager.SetMaxHealth();
         _gameCoroutine = StartCoroutine(GameCoroutine());
         _inputCoroutine = StartCoroutine(InputControlCoroutine());

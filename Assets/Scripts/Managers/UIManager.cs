@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button _exit;
     [SerializeField] private Button _restart2;
     [SerializeField] private Button _exit2;
+    [SerializeField] private Button _closeProgram;
 
     [SerializeField] private TMP_Text _health;
     [SerializeField] private TMP_Text _score;
@@ -47,6 +48,7 @@ public class UIManager : MonoBehaviour
         _restart2.onClick.AddListener(() => pressRestartGameButtonEvent?.Invoke());
         _exit.onClick.AddListener(() => pressExitGameButtonEvent?.Invoke());
         _exit2.onClick.AddListener(() => pressExitGameButtonEvent?.Invoke());
+        _closeProgram.onClick.AddListener(() => Application.Quit());
     }
 
     private void ChangeLevel()
@@ -79,5 +81,8 @@ public class UIManager : MonoBehaviour
     {
         _record.text = value.ToString();
     }
-
+    public void UpdateLevel(int value)
+    {
+        _level.text = value.ToString();
+    }
 }
