@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,6 +12,13 @@ public class GameManager : MonoBehaviour
 
     private string _alphaAll;
     private bool _langEng;
+
+    private List<string> _listOfWordsRus = new List<string>();
+    private List<string> _listOfWordsEng = new List<string>();
+    private Dictionary<int, List<string>> _dictCountAlphaLists = new Dictionary<int, List<string>>();    
+
+    private float koefSpeed = 1f;
+
     [SerializeField] private UIManager uiManager;
     [SerializeField] private int _sizePool;
     [SerializeField] private int _startHealth;
@@ -19,7 +27,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform _parentForActiveObject;
     [SerializeField] private Square _prefabSquare;
     [SerializeField] private float _defaultTimeForRespawnSquade;
-    
+
+    [SerializeField] private TextAsset fileRus;
+    [SerializeField] private TextAsset fileEng;
+
     public SceneManager sceneManager;
     public ControllerSquare controllerSquare = new ControllerSquare();
     public SaveLoadManager saveLoadManager = new SaveLoadManager();
@@ -27,6 +38,7 @@ public class GameManager : MonoBehaviour
     private Coroutine _gameCoroutine;
     private Coroutine _inputCoroutine;
 
+    
     public IGameState State { get; set; }
     public IGameState OldState { get; set; }
     public Dictionary<Type, IGameState> stateMap;
@@ -34,6 +46,40 @@ public class GameManager : MonoBehaviour
 
     public Action<int> trueAlphaInputEvent;    
 
+    private void UpSpeedSimulation()
+    {
+        if (_levelManager.Level < 5) koefSpeed = 1f;
+        else
+        {
+            if (_levelManager.Level < 10) koefSpeed = 1.2f;
+            else
+            {
+                if (_levelManager.Level < 15) koefSpeed = 1.5f;
+                else
+                {
+                    if (_levelManager.Level < 20) koefSpeed = 2f;
+                    else
+                    {
+                        if (_levelManager.Level < 25) koefSpeed = 2.5f;
+                        else
+                        {
+                            if (_levelManager.Level < 35) koefSpeed = 3f;
+                            else
+                            {
+                                if (_levelManager.Level < 40) koefSpeed = 3.5f;
+                                else
+                                {
+                                    if (_levelManager.Level < 50) koefSpeed = 5f;
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            }
+        }
+    }
     private void OnEnable()
     {
         uiManager.pressStartGameButtonEvent += () => ChangeState(GetState<StartGameState>());
@@ -50,6 +96,7 @@ public class GameManager : MonoBehaviour
         _healthManager.gameOverEvent += GameOver;
         saveLoadManager.loadDataEvent += _scoreManager.LoadRecordData;
         _scoreManager.scoreToNextLevelEvent += _levelManager.LevelUP;
+        _scoreManager.scoreToNextLevelEvent += UpSpeedSimulation;
         _levelManager.levelChangeEvent += uiManager.UpdateLevel;
     }
     private void OnDisable()
@@ -68,6 +115,7 @@ public class GameManager : MonoBehaviour
         _healthManager.gameOverEvent -= GameOver;
         saveLoadManager.loadDataEvent -= _scoreManager.LoadRecordData;
         _scoreManager.scoreToNextLevelEvent -= _levelManager.LevelUP;
+        _scoreManager.scoreToNextLevelEvent -= UpSpeedSimulation;
         _levelManager.levelChangeEvent -= uiManager.UpdateLevel;
     }
     
@@ -79,8 +127,30 @@ public class GameManager : MonoBehaviour
     public void ChangeLang(bool langEng)
     {
         _langEng = langEng;
-        if (_langEng) _alphaAll = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        else _alphaAll = "¿¡¬√ƒ≈®∆«»… ÀÃÕŒœ–—“”‘’÷◊ÿŸ⁄€‹›ﬁﬂ";
+
+        for (int i = 0; i < 12; i++)
+        {
+            _dictCountAlphaLists[i].Clear();
+        }
+
+        if (_langEng)
+        {
+            _alphaAll = "abcdefghijklmnopqrstuvwxyz";
+            
+            foreach (string word in _listOfWordsEng)
+            {
+                if (word.Length > 0 && word.Substring(0, 1) != "-" && word.Length < 10) _dictCountAlphaLists[word.Length].Add(word.ToLower());
+            }
+        }
+        else
+        {
+            _alphaAll = "‡·‚„‰Â∏ÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ˜¯˘˙˚¸˝˛ˇ";
+            
+            foreach (string word in _listOfWordsRus)
+            {
+                if (word.Length > 0 && word.Substring(0, 1) != "-" && word.Length < 10) _dictCountAlphaLists[word.Length].Add(word.ToLower());
+            }
+        }
     }
 
     private List<Square> InstantiateSquareForPool()
@@ -132,9 +202,23 @@ public class GameManager : MonoBehaviour
         }        
         ChangeState(GetState<MainMenuState>());        
         controllerSquare.Init(InstantiateSquareForPool(), _parentForPool);        
-        _healthManager.Init(_startHealth);
+        _healthManager.Init(_startHealth); 
     }
+    private void Awake()
+    {
+        var contentRus = fileRus.text;
+        var allWordsRus = contentRus.Split("\n");
+        _listOfWordsRus = new List<string>(allWordsRus);
 
+        var contentEng = fileEng.text;
+        var allWordsEng = contentEng.Split("\n");
+        _listOfWordsEng = new List<string>(allWordsEng);
+
+        for (int i = 0; i < 12; i++)
+        {
+            _dictCountAlphaLists.Add(i, new List<string>());
+        }
+    }
     public void StartGame()
     {
         _levelManager.Init();
@@ -143,6 +227,7 @@ public class GameManager : MonoBehaviour
         _healthManager.SetMaxHealth();
         _gameCoroutine = StartCoroutine(GameCoroutine());
         _inputCoroutine = StartCoroutine(InputControlCoroutine());
+        UpSpeedSimulation();
     }
     private void OnDestroy()
     {
@@ -164,14 +249,240 @@ public class GameManager : MonoBehaviour
         {
             if (State != GetState<PauseState>())
             {
-                Vector2 positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.1f, 0.9f), 1));
+                Vector2 positionRandomX = Vector2.zero;                
                 Square square = controllerSquare.TakeNextSquareInPool(_prefabSquare.dataSquare.ID, new Vector3(positionRandomX.x, positionRandomX.y, _parentForActiveObject.position.z));
-                square.gameObject.transform.parent = _parentForActiveObject;                
-                square.dataSquare.SetDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                square.gameObject.transform.parent = _parentForActiveObject;
+                if (_levelManager.Level < 5)
+                {
+                    square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                    controllerSquare.SetPosition(square, _levelManager.Level);
+                }
+                else
+                {
+                    if (_levelManager.Level < 10)
+                    {
+                        int r = UnityEngine.Random.Range(0, 2);
+                        if (r == 0)
+                        {
+                            square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                            controllerSquare.SetPosition(square, _levelManager.Level);
+                        }
+                        else
+                        {
+                            square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                            controllerSquare.SetPosition(square, _levelManager.Level);
+                        }
+                    }
+                    else
+                    {
+                        if (_levelManager.Level < 15)
+                        {
+                            int r = UnityEngine.Random.Range(0, 3);
+                            if (r == 0)
+                            {
+                                square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                controllerSquare.SetPosition(square, 5);
+                            }
+                            if (r == 1)
+                            {
+                                square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                controllerSquare.SetPosition(square, 5);
+                            }
+                            if (r == 2)
+                            {
+                                square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                controllerSquare.SetPosition(square, _levelManager.Level);
+                            }
+                        }
+                        else
+                        {
+                            if (_levelManager.Level < 20)
+                            {
+                                int r = UnityEngine.Random.Range(0, 4);
+                                if (r == 0)
+                                {
+                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    controllerSquare.SetPosition(square, 5);
+                                }
+                                if (r == 1)
+                                {
+                                    square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    controllerSquare.SetPosition(square, 5);
+                                }
+                                if (r == 2)
+                                {
+                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    controllerSquare.SetPosition(square, 10);
+                                }
+                                if (r == 3)
+                                {
+                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[4][UnityEngine.Random.Range(0, _dictCountAlphaLists[4].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    controllerSquare.SetPosition(square, _levelManager.Level);
+                                }
+                            }
+                            else
+                            {
+                                if (_levelManager.Level < 25)
+                                {
+                                    int r = UnityEngine.Random.Range(0, 5);
+                                    controllerSquare.SetPosition(square, 5);
+                                    if (r == 0) square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    if (r == 1) square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    if (r == 2) square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                    if (r == 3)
+                                    {
+                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[4][UnityEngine.Random.Range(0, _dictCountAlphaLists[4].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                        controllerSquare.SetPosition(square, 15);
+                                    }
+                                    if (r == 4)
+                                    {
+                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[5][UnityEngine.Random.Range(0, _dictCountAlphaLists[5].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                        controllerSquare.SetPosition(square, _levelManager.Level);
+                                    }
+                                }
+                                else
+                                {
+                                    if (_levelManager.Level < 30)
+                                    {
+                                        int r = UnityEngine.Random.Range(0, 6);
+                                        controllerSquare.SetPosition(square, 5);
+                                        if (r == 0) square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                        if (r == 1) square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                        if (r == 2) square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                        if (r == 3)
+                                        {
+                                            square.dataSquare.AddDataSquare(_dictCountAlphaLists[4][UnityEngine.Random.Range(0, _dictCountAlphaLists[4].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                            controllerSquare.SetPosition(square, 15);
+                                        }
+                                        if (r == 4)
+                                        {
+                                            square.dataSquare.AddDataSquare(_dictCountAlphaLists[5][UnityEngine.Random.Range(0, _dictCountAlphaLists[5].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                            controllerSquare.SetPosition(square, 25);
+                                        }
+                                        if (r == 5)
+                                        {
+                                            square.dataSquare.AddDataSquare(_dictCountAlphaLists[6][UnityEngine.Random.Range(0, _dictCountAlphaLists[6].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                            controllerSquare.SetPosition(square, _levelManager.Level);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (_levelManager.Level < 35)
+                                        {
+                                            int r = UnityEngine.Random.Range(0, 7);
+                                            controllerSquare.SetPosition(square, 5);
+                                            if (r == 0) square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                            if (r == 1) square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                            if (r == 2) square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                            if (r == 3)
+                                            {
+                                                square.dataSquare.AddDataSquare(_dictCountAlphaLists[4][UnityEngine.Random.Range(0, _dictCountAlphaLists[4].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                controllerSquare.SetPosition(square, 15);
+                                            }
+                                            if (r == 4)
+                                            {
+                                                square.dataSquare.AddDataSquare(_dictCountAlphaLists[5][UnityEngine.Random.Range(0, _dictCountAlphaLists[5].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                controllerSquare.SetPosition(square, 25);
+                                            }
+                                            if (r == 5)
+                                            {
+                                                square.dataSquare.AddDataSquare(_dictCountAlphaLists[6][UnityEngine.Random.Range(0, _dictCountAlphaLists[6].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                controllerSquare.SetPosition(square, 30);
+                                            }
+                                            if (r == 6)
+                                            {
+                                                square.dataSquare.AddDataSquare(_dictCountAlphaLists[7][UnityEngine.Random.Range(0, _dictCountAlphaLists[7].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                controllerSquare.SetPosition(square, _levelManager.Level);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (_levelManager.Level < 40)
+                                            {
+                                                int r = UnityEngine.Random.Range(0, 8);
+                                                controllerSquare.SetPosition(square, 5);
+                                                if (r == 0) square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                if (r == 1) square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                if (r == 2) square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                if (r == 3)
+                                                {
+                                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[4][UnityEngine.Random.Range(0, _dictCountAlphaLists[4].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    controllerSquare.SetPosition(square, 15);
+                                                }
+                                                if (r == 4)
+                                                {
+                                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[5][UnityEngine.Random.Range(0, _dictCountAlphaLists[5].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    controllerSquare.SetPosition(square, 20);
+                                                }
+                                                if (r == 5)
+                                                {
+                                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[6][UnityEngine.Random.Range(0, _dictCountAlphaLists[6].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    controllerSquare.SetPosition(square, 25);
+                                                }
+                                                if (r == 6)
+                                                {
+                                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[7][UnityEngine.Random.Range(0, _dictCountAlphaLists[7].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    controllerSquare.SetPosition(square, 30);
+                                                }
+                                                if (r == 7)
+                                                {
+                                                    square.dataSquare.AddDataSquare(_dictCountAlphaLists[8][UnityEngine.Random.Range(0, _dictCountAlphaLists[8].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (_levelManager.Level < 45)
+                                                {
+                                                    int r = UnityEngine.Random.Range(0, 9);
+                                                    controllerSquare.SetPosition(square, 5);
+                                                    if (r == 0) square.dataSquare.AddDataSquare(_dictCountAlphaLists[2][UnityEngine.Random.Range(0, _dictCountAlphaLists[2].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    if (r == 1) square.dataSquare.AddDataSquare(_alphaAll[UnityEngine.Random.Range(0, _alphaAll.Length)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    if (r == 2) square.dataSquare.AddDataSquare(_dictCountAlphaLists[3][UnityEngine.Random.Range(0, _dictCountAlphaLists[3].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                    if (r == 3)
+                                                    {
+                                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[4][UnityEngine.Random.Range(0, _dictCountAlphaLists[4].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                        controllerSquare.SetPosition(square, 20);
+                                                    }
+                                                    if (r == 4)
+                                                    {
+                                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[5][UnityEngine.Random.Range(0, _dictCountAlphaLists[5].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                        controllerSquare.SetPosition(square, 25);
+                                                    }
+                                                    if (r == 5)
+                                                    {
+                                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[6][UnityEngine.Random.Range(0, _dictCountAlphaLists[6].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                        controllerSquare.SetPosition(square, 30);
+                                                    }
+                                                    if (r == 6)
+                                                    {
+                                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[7][UnityEngine.Random.Range(0, _dictCountAlphaLists[7].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                        controllerSquare.SetPosition(square, 35);
+                                                    }
+                                                    if (r == 7)
+                                                    {
+                                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[8][UnityEngine.Random.Range(0, _dictCountAlphaLists[8].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                        controllerSquare.SetPosition(square, 40);
+                                                    }
+                                                    if (r == 8)
+                                                    {
+                                                        square.dataSquare.AddDataSquare(_dictCountAlphaLists[9][UnityEngine.Random.Range(0, _dictCountAlphaLists[9].Count)], _colors[UnityEngine.Random.Range(0, _colors.Count)]);
+                                                        controllerSquare.SetPosition(square, _levelManager.Level);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
                 square.UpdateSpeed(_levelManager.Level);
                 square.gameObject.SetActive(true);                
             }
-            yield return new WaitForSeconds(_defaultTimeForRespawnSquade / _levelManager.Level);
+            yield return new WaitForSeconds(_defaultTimeForRespawnSquade / koefSpeed);
         }
     }
 
@@ -184,12 +495,19 @@ public class GameManager : MonoBehaviour
                 if (Input.anyKey)
                 {
                     Square square = null;
-                    if (controllerSquare.CheckAlpha(Input.inputString.ToUpper(), out square))
+                    if (controllerSquare.CheckAlpha(Input.inputString.ToLower(), out square))
                     {
                         if (square != null)
                         {
-                            controllerSquare.ReturnToPool(square);
-                            trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
+                            if (square.dataSquare.DeleteAlpha(Input.inputString.ToLower()))
+                            {
+                                controllerSquare.ReturnToPool(square);
+                                trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
+                            } 
+                            else
+                            {
+                                square.DisableAlpha();
+                            }
                         }
                     }
                 }                              

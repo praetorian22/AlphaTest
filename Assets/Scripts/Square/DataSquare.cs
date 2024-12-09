@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class DataSquare
 {
-    private string _alpha;
+    private List<string> _alpha = new List<string>();
     private int _id;
     private int _damage;
     private Color32 _color;
     private bool _initOK;    
-    private int _balls;
+    private int _balls;    
 
-    public string Alpha => _alpha;
+    public List<string> Alpha => _alpha;
     public int ID => _id;
     public int Damage => _damage;    
     public Color32 Color => _color;
@@ -29,9 +29,27 @@ public class DataSquare
         }        
     }
 
-    public void SetDataSquare(char alpha, Color32 color)
+    public void AddDataSquare(char alpha, Color32 color)
     {
-        _alpha = alpha.ToString();
+        _alpha.Add(alpha.ToString());
         _color = color;        
+    }
+    public void AddDataSquare(string str, Color32 color)
+    {
+        foreach (char c in str)
+        {
+            _alpha.Add(c.ToString());
+        }        
+        _color = color;
+    }
+
+    public bool DeleteAlpha(string alpha)
+    {
+        if (alpha != "" && _alpha.Count > 0 && _alpha[0] == alpha)
+        {
+            _alpha.RemoveAt(0);
+        }
+        if (_alpha.Count > 0) return false;
+        else return true;
     }
 }

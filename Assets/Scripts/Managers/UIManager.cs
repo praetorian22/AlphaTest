@@ -53,19 +53,19 @@ public class UIManager : MonoBehaviour
 
     private void ChangeLevel()
     {
-        _levelSetter += 5;
-        if (_levelSetter > 11) _levelSetter = 1;
-        if (_levelSetter == 1) _levelChange.GetComponentInChildren<TMP_Text>().text = "EASY";
-        if (_levelSetter == 6) _levelChange.GetComponentInChildren<TMP_Text>().text = "NORMAL";
-        if (_levelSetter == 11) _levelChange.GetComponentInChildren<TMP_Text>().text = "HARD";
+        _levelSetter += 10;
+        if (_levelSetter > 21) _levelSetter = 1;
+        if (_levelSetter == 1) _levelChange.GetComponentInChildren<TMP_Text>().text = "À≈ √Œ";
+        if (_levelSetter == 11) _levelChange.GetComponentInChildren<TMP_Text>().text = "ÕŒ–Ã¿";
+        if (_levelSetter == 21) _levelChange.GetComponentInChildren<TMP_Text>().text = "—ÀŒ∆ÕŒ";
         setLevelEvent?.Invoke(_levelSetter);
     }
 
     private void ChangeLang()
     {
         _langSetter = !_langSetter;
-        if (_langSetter) _lang.GetComponentInChildren<TMP_Text>().text = "ENG";
-        else _lang.GetComponentInChildren<TMP_Text>().text = "RUS";
+        if (_langSetter) _lang.GetComponentInChildren<TMP_Text>().text = "¿Õ√À»…— »…";
+        else _lang.GetComponentInChildren<TMP_Text>().text = "–”—— »…";
         setLangEvent?.Invoke(_langSetter);
     }
 

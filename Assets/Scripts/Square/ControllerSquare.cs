@@ -33,7 +33,6 @@ public class ControllerSquare
             ReturnToPool(squaresActiveCopy[i]);
         }
     }
-
     public Square TakeNextSquareInPool(int key, Vector3 position)
     {
         Square square = _poolSquare.TakeNextSquare(key);
@@ -42,11 +41,41 @@ public class ControllerSquare
         square.damageEvent += ReturnToPool;
         return square;
     }
+    public void SetPosition(Square square, int level)
+    {
+        Vector3 positionRandomX = Vector3.zero;
+        if (level < 10)
+        {
+            positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.1f, 0.9f), 1));            
+        }
+        else
+        {
+            if (level < 20)
+            {
+                positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.2f, 0.8f), 1));
+            }
+            else
+            {
+                if (level < 30)
+                {
+                    positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.3f, 0.7f), 1));
+                }
+                else
+                {
+                    if (level < 50)
+                    {
+                        positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.4f, 0.6f), 1));
+                    }                    
+                }
+            }
+        }
+        square.gameObject.transform.position = new Vector3(positionRandomX.x, positionRandomX.y, square.gameObject.transform.position.z);
+    }
     public bool CheckAlpha(string alpha, out Square squareR)
     {
         foreach (Square square in _activeSquare)
         {
-            if (square.dataSquare.Alpha == alpha)
+            if (square.dataSquare.Alpha.IndexOf(alpha) == 0)
             {
                 squareR = square;
                 return true;
