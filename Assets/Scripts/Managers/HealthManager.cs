@@ -23,6 +23,15 @@ public class HealthManager
         healthChangeEvent?.Invoke(_health);
     }
 
+    public void DecHealth(int value)
+    {
+        _health -= value;
+        healthChangeEvent?.Invoke(_health);
+        if (_health <= 0)
+        {
+            gameOverEvent?.Invoke();
+        }
+    }
     public void DecHealth(Square square)
     {
         _health -= square.dataSquare.Damage;

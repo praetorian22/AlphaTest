@@ -14,9 +14,10 @@ public class GameManager : MonoBehaviour
     private bool _langEng;
 
     private List<string> _listOfWordsRus = new List<string>();
-    private List<string> _listOfWordsEng = new List<string>();
+    private List<string> _listOfWordsEng = new List<string>();    
     private Dictionary<int, List<string>> _dictCountAlphaLists = new Dictionary<int, List<string>>();    
-
+    private Dictionary<string, GameObject> _dictAlphaPrefabs = new Dictionary<string, GameObject>();
+    
     private float koefSpeed = 1f;
 
     [SerializeField] private UIManager uiManager;
@@ -27,9 +28,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform _parentForActiveObject;
     [SerializeField] private Square _prefabSquare;
     [SerializeField] private float _defaultTimeForRespawnSquade;
+    [SerializeField] private List<string> _alphaForDictionary = new List<string>();
+    [SerializeField] private List<GameObject> _prefabsForDictionary = new List<GameObject>();
 
     [SerializeField] private TextAsset fileRus;
     [SerializeField] private TextAsset fileEng;
+    [SerializeField] private float timeErrorInputDefault;
 
     public SceneManager sceneManager;
     public ControllerSquare controllerSquare = new ControllerSquare();
@@ -37,6 +41,7 @@ public class GameManager : MonoBehaviour
 
     private Coroutine _gameCoroutine;
     private Coroutine _inputCoroutine;
+    private float _timeErrorInput = 0f;
 
     
     public IGameState State { get; set; }
@@ -161,10 +166,16 @@ public class GameManager : MonoBehaviour
             GameObject gameObject = Instantiate(_prefabSquare.gameObject, _parentForPool);
             gameObject.SetActive(false);
             Square square = gameObject.GetComponent<Square>();
+            square.Init();
             squares.Add(square);
             square.damageEvent += _healthManager.DecHealth; // без отписки
         }
         return squares;
+    }
+
+    private void DecHealth(int value)
+    {
+        _healthManager.DecHealth(value);
     }
 
     private void InitState()
@@ -204,6 +215,20 @@ public class GameManager : MonoBehaviour
         controllerSquare.Init(InstantiateSquareForPool(), _parentForPool);        
         _healthManager.Init(_startHealth); 
     }
+    private GameObject CreateAlphaDead(string alphaS, Color32 color)
+    {
+        if (_dictAlphaPrefabs.ContainsKey(alphaS))
+        {
+            GameObject alpha = Instantiate(_dictAlphaPrefabs[alphaS]);
+            var renderers = alpha.GetComponentsInChildren<Renderer>();
+            foreach (Renderer renderer in renderers)
+            {
+                renderer.material.color = color;
+            }
+            return alpha;
+        } 
+        return null;
+    }
     private void Awake()
     {
         var contentRus = fileRus.text;
@@ -217,6 +242,10 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < 12; i++)
         {
             _dictCountAlphaLists.Add(i, new List<string>());
+        }
+        for (int i = 0; i < _alphaForDictionary.Count; i++)
+        {
+            _dictAlphaPrefabs.Add(_alphaForDictionary[i], _prefabsForDictionary[i]);
         }
     }
     public void StartGame()
@@ -250,7 +279,7 @@ public class GameManager : MonoBehaviour
             if (State != GetState<PauseState>())
             {
                 Vector2 positionRandomX = Vector2.zero;                
-                Square square = controllerSquare.TakeNextSquareInPool(_prefabSquare.dataSquare.ID, new Vector3(positionRandomX.x, positionRandomX.y, _parentForActiveObject.position.z));
+                Square square = controllerSquare.TakeNextSquareInPool(_prefabSquare.ID, new Vector3(positionRandomX.x, positionRandomX.y, _parentForActiveObject.position.z));
                 square.gameObject.transform.parent = _parentForActiveObject;
                 if (_levelManager.Level < 5)
                 {
@@ -490,24 +519,40 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
+            if (_timeErrorInput >= 0) _timeErrorInput -= Time.deltaTime;
             if (State != GetState<PauseState>())
             {
                 if (Input.anyKey)
                 {
                     Square square = null;
-                    if (controllerSquare.CheckAlpha(Input.inputString.ToLower(), out square))
+                    string alpha = Input.inputString.ToLower();
+                    if (controllerSquare.CheckAlpha(alpha, out square))
                     {
                         if (square != null)
                         {
-                            if (square.dataSquare.DeleteAlpha(Input.inputString.ToLower()))
+                            if (square.dataSquare.DeleteAlpha(alpha))
                             {
+                                Vector3 position = square.DisableAlpha();
+                                GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
+                                if (deadAlpha != null) deadAlpha.transform.position = position;
                                 controllerSquare.ReturnToPool(square);
                                 trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
                             } 
                             else
                             {
-                                square.DisableAlpha();
+                                Vector3 position = square.DisableAlpha();
+                                GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
+                                if (deadAlpha != null) deadAlpha.transform.position = position;
+                                trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
                             }
+                        }
+                    }
+                    else
+                    {
+                        if (_timeErrorInput < 0)
+                        {
+                            DecHealth(1);
+                            _timeErrorInput = timeErrorInputDefault;
                         }
                     }
                 }                              
