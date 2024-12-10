@@ -21,5 +21,7 @@ public enum scenes
     menu,
     game,
     pause,
-    end
+    end,
+    levels,
+    levelInfo,
 }

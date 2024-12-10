@@ -17,11 +17,21 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button _restart2;
     [SerializeField] private Button _exit2;
     [SerializeField] private Button _closeProgram;
+    [SerializeField] private Button _goLevel;
+    [SerializeField] private Button _goBackLevel;
+    [SerializeField] private Button _goBackLevelMenu;
 
     [SerializeField] private TMP_Text _health;
     [SerializeField] private TMP_Text _score;
     [SerializeField] private TMP_Text _record;
     [SerializeField] private TMP_Text _level;
+
+    [SerializeField] private TMP_Text _errorsLevel;
+    [SerializeField] private TMP_Text _speedLevel;
+    [SerializeField] private TMP_Text _ballsLevel;
+    [SerializeField] private TMP_Text _maxAlphaLevel;
+    [SerializeField] private TMP_Text _timeLevel;
+
     private int _levelSetter;
     private bool _langSetter;
 
