@@ -41,31 +41,59 @@ public class ControllerSquare
         square.damageEvent += ReturnToPool;
         return square;
     }
-    public void SetPosition(Square square, int level)
+    public void SetPosition(Square square, int maxAlphaCount)
     {
         Vector3 positionRandomX = Vector3.zero;
-        if (level < 10)
+        if (maxAlphaCount == 1)
         {
             positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.1f, 0.9f), 1));            
         }
         else
         {
-            if (level < 20)
+            if (maxAlphaCount == 2)
             {
-                positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.2f, 0.8f), 1));
+                positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.15f, 0.85f), 1));
             }
             else
             {
-                if (level < 30)
+                if (maxAlphaCount == 3)
                 {
-                    positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.3f, 0.7f), 1));
+                    positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.2f, 0.8f), 1));
                 }
                 else
                 {
-                    if (level < 50)
+                    if (maxAlphaCount == 4)
                     {
-                        positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.4f, 0.6f), 1));
-                    }                    
+                        positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.25f, 0.75f), 1));
+                    }
+                    else
+                    {
+                        if (maxAlphaCount == 5)
+                        {
+                            positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.3f, 0.7f), 1));
+                        }
+                        else
+                        {
+                            if (maxAlphaCount == 6)
+                            {
+                                positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.35f, 0.65f), 1));
+                            }
+                            else
+                            {
+                                if (maxAlphaCount == 7)
+                                {
+                                    positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.4f, 0.6f), 1));
+                                }
+                                else
+                                {
+                                    if (maxAlphaCount > 7)
+                                    {
+                                        positionRandomX = Camera.main.ViewportToWorldPoint(new Vector2(UnityEngine.Random.Range(0.45f, 0.55f), 1));
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

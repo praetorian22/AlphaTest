@@ -20,6 +20,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button _goLevel;
     [SerializeField] private Button _goBackLevel;
     [SerializeField] private Button _goBackLevelMenu;
+    [SerializeField] private List<Button> _selectLevelButtons = new List<Button>();
 
     [SerializeField] private TMP_Text _health;
     [SerializeField] private TMP_Text _score;
@@ -32,7 +33,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text _maxAlphaLevel;
     [SerializeField] private TMP_Text _timeLevel;
 
-    private int _levelSetter;
     private bool _langSetter;
 
     public Action pressStartGameButtonEvent;
@@ -40,17 +40,14 @@ public class UIManager : MonoBehaviour
     public Action pressExitGameButtonEvent;
     public Action pressResumeGameButtonEvent;
     public Action pressRestartGameButtonEvent;
-    public Action<int> setLevelEvent;
     public Action<bool> setLangEvent;
+    public Action<Level> pressLevelSelect;
 
     private void Start()
     {
-        _levelSetter = 1;
         _langSetter = true;
-        ChangeLevel();
         ChangeLang();
         _start.onClick.AddListener(() => pressStartGameButtonEvent?.Invoke());
-        _levelChange.onClick.AddListener(() => ChangeLevel());
         _lang.onClick.AddListener(() => ChangeLang());
         _menu.onClick.AddListener(() => pressMenuGameButtonEvent?.Invoke());
         _resume.onClick.AddListener(() => pressResumeGameButtonEvent?.Invoke());
@@ -59,8 +56,15 @@ public class UIManager : MonoBehaviour
         _exit.onClick.AddListener(() => pressExitGameButtonEvent?.Invoke());
         _exit2.onClick.AddListener(() => pressExitGameButtonEvent?.Invoke());
         _closeProgram.onClick.AddListener(() => Application.Quit());
-    }
 
+        foreach (Button button in _selectLevelButtons)
+        {
+            Level level = button.GetComponent<Level>();
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => pressLevelSelect?.Invoke(level));
+        }
+    }
+    /*
     private void ChangeLevel()
     {
         _levelSetter += 10;
@@ -70,7 +74,7 @@ public class UIManager : MonoBehaviour
         if (_levelSetter == 21) _levelChange.GetComponentInChildren<TMP_Text>().text = "ÑËÎÆÍÎ";
         setLevelEvent?.Invoke(_levelSetter);
     }
-
+    */
     private void ChangeLang()
     {
         _langSetter = !_langSetter;

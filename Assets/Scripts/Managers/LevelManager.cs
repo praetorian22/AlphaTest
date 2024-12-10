@@ -5,22 +5,15 @@ using System;
 
 public class LevelManager
 {
-    private int _level;
-    public int startLevel;
+    private Level _levelSelected;
+    [SerializeField] private List<Level> _levels = new List<Level>();
 
-    public int Level => _level;
+    public Level LevelSelected => _levelSelected;
 
     public Action<int> levelChangeEvent;
 
-    public void Init()
+    public void SelectLevel(Level level)
     {
-        _level = startLevel;
-        levelChangeEvent.Invoke(_level);
-    }
-
-    public void LevelUP()
-    {
-        _level++;
-        levelChangeEvent.Invoke(_level);
-    }
+        _levelSelected = level;
+    }    
 }

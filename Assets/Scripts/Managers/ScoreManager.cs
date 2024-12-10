@@ -6,7 +6,6 @@ using System;
 public class ScoreManager
 {
     private int _score;
-    private int _scoreNextLevel;
     private int _record;
 
     public int Score => _score;
@@ -20,7 +19,6 @@ public class ScoreManager
     {
         _score = 0;
         _record = 0;
-        _scoreNextLevel = 100;
         changeScoreEvent?.Invoke(_score);
         changeRecordEvent?.Invoke(_record);
     }
@@ -35,36 +33,6 @@ public class ScoreManager
     {
         _score += value;
         changeScoreEvent?.Invoke(_score);
-
-        if (_score > _scoreNextLevel)
-        {
-            scoreToNextLevelEvent?.Invoke();
-            if (_scoreNextLevel < 500)
-            {
-                _scoreNextLevel += 100;
-            }                
-            else
-            {
-                if (_scoreNextLevel < 5000)
-                {
-                    _scoreNextLevel += 500;
-                }
-                else
-                {
-                    if (_scoreNextLevel < 20000)
-                    {
-                        _scoreNextLevel += 1000;
-                    }                        
-                    else
-                    {
-                        if (_scoreNextLevel < 50000) _scoreNextLevel += 5000;
-                    }
-                            
-                }
-                            
-            }
-                
-        }
 
         if (_record < _score)
         {

@@ -17,9 +17,9 @@ public class HealthManager
         _maxHealth = value;        
     }
 
-    public void SetMaxHealth()
+    public void SetHealth(int value)
     {
-        _health = _maxHealth;
+        _health = value;
         healthChangeEvent?.Invoke(_health);
     }
 

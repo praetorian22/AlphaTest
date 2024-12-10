@@ -55,9 +55,8 @@ public class Square : MonoBehaviour
         return Vector3.zero;
     }
 
-    public void UpdateSpeed(int level)
+    public void UpdateSpeed(float koef)
     {
-        int koef = Mathf.CeilToInt(level / 10);
         if (koef > 0) _simulationSquare.speed = _simulationSquare.SpeedDef * koef;
         dataSquare.tempSpeed = _simulationSquare.speed;
     }
