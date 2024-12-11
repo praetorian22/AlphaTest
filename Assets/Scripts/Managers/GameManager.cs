@@ -6,6 +6,9 @@ using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
+    private float _timeLevel;
+    private int _ballTargetInLevel;
+
     private LevelManager _levelManager = new LevelManager();       
     private ScoreManager _scoreManager = new ScoreManager();
     private HealthManager _healthManager = new HealthManager();
@@ -40,14 +43,16 @@ public class GameManager : MonoBehaviour
     public SaveLoadManager saveLoadManager = new SaveLoadManager();
 
     private Coroutine _gameCoroutine;
-    private Coroutine _inputCoroutine;    
+    private Coroutine _inputCoroutine;
+    private Coroutine _timerCoroutine;
     
     public IGameState State { get; set; }
     public IGameState OldState { get; set; }
     public Dictionary<Type, IGameState> stateMap;
     bool iniOK;
 
-    public Action<int> trueAlphaInputEvent;    
+    public Action<int> trueAlphaInputEvent;
+    public Action<float> changeTimeInLevelEvent;
         
     private void OnEnable()
     {
@@ -56,6 +61,9 @@ public class GameManager : MonoBehaviour
         uiManager.pressResumeGameButtonEvent += () => ChangeState(GetState<GameState>());
         uiManager.pressExitGameButtonEvent += () => ChangeState(GetState<ExitGameState>());
         uiManager.pressRestartGameButtonEvent += () => ChangeState(GetState<RestartGameState>());
+        uiManager.pressBackToMapLevelButtonEvent += () => ChangeState(GetState<LevelsMapState>());
+        uiManager.pressBackToMenuButtonEvent += () => ChangeState(GetState<MainMenuState>());
+        uiManager.pressBeginButtonEvent += () => ChangeState(GetState<LevelsMapState>());
         uiManager.setLangEvent += ChangeLang;
         _healthManager.healthChangeEvent += uiManager.UpdateHealth;
         _scoreManager.changeScoreEvent += uiManager.UpdateScore;
@@ -64,6 +72,9 @@ public class GameManager : MonoBehaviour
         _healthManager.gameOverEvent += GameOver;
         saveLoadManager.loadDataEvent += _scoreManager.LoadRecordData;           
         _levelManager.levelChangeEvent += uiManager.UpdateLevel;
+        changeTimeInLevelEvent += uiManager.UpdateTimerInLevel;
+        uiManager.pressLevelSelect += _levelManager.SelectLevel;
+        uiManager.pressLevelSelect += (Level level) => ChangeState(GetState<SelectLevelState>());
     }
     private void OnDisable()
     {
@@ -72,6 +83,9 @@ public class GameManager : MonoBehaviour
         uiManager.pressResumeGameButtonEvent -= () => ChangeState(GetState<GameState>());
         uiManager.pressExitGameButtonEvent -= () => ChangeState(GetState<ExitGameState>());
         uiManager.pressRestartGameButtonEvent -= () => ChangeState(GetState<RestartGameState>());
+        uiManager.pressBackToMapLevelButtonEvent -= () => ChangeState(GetState<LevelsMapState>());
+        uiManager.pressBackToMenuButtonEvent -= () => ChangeState(GetState<MainMenuState>());
+        uiManager.pressBeginButtonEvent -= () => ChangeState(GetState<LevelsMapState>());
         uiManager.setLangEvent -= ChangeLang;
         _healthManager.healthChangeEvent -= uiManager.UpdateHealth;
         _scoreManager.changeScoreEvent -= uiManager.UpdateScore;
@@ -80,6 +94,9 @@ public class GameManager : MonoBehaviour
         _healthManager.gameOverEvent -= GameOver;
         saveLoadManager.loadDataEvent -= _scoreManager.LoadRecordData;        
         _levelManager.levelChangeEvent -= uiManager.UpdateLevel;
+        changeTimeInLevelEvent -= uiManager.UpdateTimerInLevel;
+        uiManager.pressLevelSelect -= _levelManager.SelectLevel;
+        uiManager.pressLevelSelect -= (Level level) => ChangeState(GetState<SelectLevelState>());
     }
     
     private void Start()
@@ -146,6 +163,8 @@ public class GameManager : MonoBehaviour
         stateMap[typeof(GameOverState)] = new GameOverState();
         stateMap[typeof(ExitGameState)] = new ExitGameState();
         stateMap[typeof(RestartGameState)] = new RestartGameState();
+        stateMap[typeof(LevelsMapState)] = new LevelsMapState();
+        stateMap[typeof(SelectLevelState)] = new SelectLevelState();
     }
     public void ChangeState(IGameState newState)
     {
@@ -171,7 +190,7 @@ public class GameManager : MonoBehaviour
         }        
         ChangeState(GetState<MainMenuState>());        
         controllerSquare.Init(InstantiateSquareForPool(), _parentForPool);        
-        _healthManager.Init(_startHealth); 
+        saveLoadManager.LoadData();
     }
     private GameObject CreateAlphaDead(string alphaS, Color32 color)
     {
@@ -204,30 +223,47 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < _alphaForDictionary.Count; i++)
         {
             _dictAlphaPrefabs.Add(_alphaForDictionary[i], _prefabsForDictionary[i]);
-        }
+        }        
     }
     public void StartGame()
-    {        
-        _scoreManager.Init();
-        saveLoadManager.LoadData();
+    {
+        _scoreManager.Init(_levelManager.LevelSelected.Number);        
         _healthManager.SetHealth(_levelManager.LevelSelected.Errors);
+        _timeLevel = _levelManager.LevelSelected.TimeLevel;
+        changeTimeInLevelEvent?.Invoke(_timeLevel);
+        _ballTargetInLevel = _levelManager.LevelSelected.Balls;
+        uiManager.SetBallsInLevel(_levelManager.LevelSelected.Balls);
+        if (_gameCoroutine != null) StopCoroutine(_gameCoroutine);
+        if (_inputCoroutine != null) StopCoroutine(_inputCoroutine);
+        if (_timerCoroutine != null) StopCoroutine(_timerCoroutine);
         _gameCoroutine = StartCoroutine(GameCoroutine());
-        _inputCoroutine = StartCoroutine(InputControlCoroutine());        
+        _inputCoroutine = StartCoroutine(InputControlCoroutine());  
+        _timerCoroutine = StartCoroutine(TimerCoroutine());
     }
     private void OnDestroy()
     {
-        saveLoadManager.SaveData(_scoreManager.Record);
+        saveLoadManager.SaveData(_scoreManager.Records);
     }
 
     public void GameOver()
     {
         ChangeState(GetState<GameOverState>());
-        StopCoroutine(_gameCoroutine);
-        StopCoroutine(_inputCoroutine);
+        if (_gameCoroutine != null) StopCoroutine(_gameCoroutine);
+        if (_inputCoroutine != null) StopCoroutine(_inputCoroutine);
+        if (_timerCoroutine != null) StopCoroutine(_timerCoroutine);
         controllerSquare.ReturnToPoolAllSquare();
-        saveLoadManager.SaveData(_scoreManager.Record);
+        saveLoadManager.SaveData(_scoreManager.Records);
     }
-
+    private IEnumerator TimerCoroutine()
+    {
+        while(_timeLevel > 0)
+        {
+            yield return new WaitForSeconds(0.1f);
+            _timeLevel -= 0.1f;
+            changeTimeInLevelEvent?.Invoke(_timeLevel);
+        }
+        GameOver();
+    }
     private IEnumerator GameCoroutine()
     {
         while (true)
@@ -536,37 +572,40 @@ public class GameManager : MonoBehaviour
         {
             if (State != GetState<PauseState>())
             {
-                if (Input.anyKey)
+                if (Input.anyKeyDown)
                 {
                     Square square = null;
                     string alpha = Input.inputString.ToLower();
-                    if (controllerSquare.CheckAlpha(alpha, out square))
+                    if (lastAlpha != alpha)
                     {
-                        lastAlpha = alpha;
-                        if (square != null)
+                        if (controllerSquare.CheckAlpha(alpha, out square))
                         {
-                            if (square.dataSquare.DeleteAlpha(alpha))
+                            lastAlpha = alpha;
+                            if (square != null)
                             {
-                                Vector3 position = square.DisableAlpha();
-                                GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
-                                if (deadAlpha != null) deadAlpha.transform.position = position;
-                                controllerSquare.ReturnToPool(square);
-                                trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
-                            } 
-                            else
-                            {
-                                Vector3 position = square.DisableAlpha();
-                                GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
-                                if (deadAlpha != null) deadAlpha.transform.position = position;
-                                trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
+                                if (square.dataSquare.DeleteAlpha(alpha))
+                                {
+                                    Vector3 position = square.DisableAlpha();
+                                    GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
+                                    if (deadAlpha != null) deadAlpha.transform.position = position;
+                                    controllerSquare.ReturnToPool(square);
+                                    trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
+                                }
+                                else
+                                {
+                                    Vector3 position = square.DisableAlpha();
+                                    GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
+                                    if (deadAlpha != null) deadAlpha.transform.position = position;
+                                    trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        if (lastAlpha != alpha) DecHealth(1);
-                        lastAlpha = alpha;
-                    }
+                        else
+                        {
+                            DecHealth(1);
+                            lastAlpha = alpha;
+                        }
+                    }                    
                 }                              
             }
             yield return null;

@@ -7,7 +7,7 @@ using System;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private Button _start;
+    [SerializeField] private Button _begin;
     [SerializeField] private Button _lang;
     [SerializeField] private Button _levelChange;
     [SerializeField] private Button _menu;
@@ -17,7 +17,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button _restart2;
     [SerializeField] private Button _exit2;
     [SerializeField] private Button _closeProgram;
-    [SerializeField] private Button _goLevel;
+    [SerializeField] private Button _start;
     [SerializeField] private Button _goBackLevel;
     [SerializeField] private Button _goBackLevelMenu;
     [SerializeField] private List<Button> _selectLevelButtons = new List<Button>();
@@ -26,6 +26,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text _score;
     [SerializeField] private TMP_Text _record;
     [SerializeField] private TMP_Text _level;
+    [SerializeField] private TMP_Text _timeLevelInLevel;
+    [SerializeField] private TMP_Text _ballsInLevel;
 
     [SerializeField] private TMP_Text _errorsLevel;
     [SerializeField] private TMP_Text _speedLevel;
@@ -40,6 +42,9 @@ public class UIManager : MonoBehaviour
     public Action pressExitGameButtonEvent;
     public Action pressResumeGameButtonEvent;
     public Action pressRestartGameButtonEvent;
+    public Action pressBeginButtonEvent;
+    public Action pressBackToMapLevelButtonEvent;
+    public Action pressBackToMenuButtonEvent;
     public Action<bool> setLangEvent;
     public Action<Level> pressLevelSelect;
 
@@ -47,6 +52,9 @@ public class UIManager : MonoBehaviour
     {
         _langSetter = true;
         ChangeLang();
+        _begin.onClick.AddListener(() => pressBeginButtonEvent?.Invoke());
+        _goBackLevel.onClick.AddListener(() => pressBackToMapLevelButtonEvent?.Invoke());
+        _goBackLevelMenu.onClick.AddListener(() => pressBackToMenuButtonEvent?.Invoke());
         _start.onClick.AddListener(() => pressStartGameButtonEvent?.Invoke());
         _lang.onClick.AddListener(() => ChangeLang());
         _menu.onClick.AddListener(() => pressMenuGameButtonEvent?.Invoke());
@@ -61,7 +69,15 @@ public class UIManager : MonoBehaviour
         {
             Level level = button.GetComponent<Level>();
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => pressLevelSelect?.Invoke(level));
+            button.onClick.AddListener(() =>
+            {
+                _errorsLevel.text = level.Errors.ToString();
+                _speedLevel.text = level.SpeedKoef.ToString();
+                _ballsLevel.text = level.Balls.ToString();
+                _maxAlphaLevel.text = level.MaxAlphaCount.ToString();
+                _timeLevel.text = level.TimeLevel.ToString();
+                pressLevelSelect?.Invoke(level);
+            });
         }
     }
     /*
@@ -98,5 +114,13 @@ public class UIManager : MonoBehaviour
     public void UpdateLevel(int value)
     {
         _level.text = value.ToString();
+    }
+    public void UpdateTimerInLevel(float value)
+    {
+        _timeLevelInLevel.text = value.ToString("0.0");
+    }
+    public void SetBallsInLevel(int value)
+    {
+        _ballsInLevel.text = value.ToString();
     }
 }

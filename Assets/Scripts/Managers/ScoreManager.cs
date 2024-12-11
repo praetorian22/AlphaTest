@@ -6,27 +6,29 @@ using System;
 public class ScoreManager
 {
     private int _score;
-    private int _record;
+    private List<int> _records;
+    private int _recordInLevel;
+    private int _numberLevel;
 
     public int Score => _score;
-    public int Record => _record;
+    public List<int> Records => _records;
 
     public Action<int> changeScoreEvent;
     public Action<int> changeRecordEvent;
     public Action scoreToNextLevelEvent;
 
-    public void Init()
+    public void Init(int numberLevel)
     {
         _score = 0;
-        _record = 0;
+        _numberLevel = numberLevel;
+        _recordInLevel = _records[numberLevel];
         changeScoreEvent?.Invoke(_score);
-        changeRecordEvent?.Invoke(_record);
+        changeRecordEvent?.Invoke(_recordInLevel);
     }
 
-    public void LoadRecordData(int value)
+    public void LoadRecordData(List<int> values)
     {
-        _record = value;
-        changeRecordEvent?.Invoke(_record);
+        _records = new List<int>(values);
     }
 
     public void AddScore(int value)
@@ -34,10 +36,11 @@ public class ScoreManager
         _score += value;
         changeScoreEvent?.Invoke(_score);
 
-        if (_record < _score)
+        if (_recordInLevel < _score)
         {
-            _record = _score;
-            changeRecordEvent?.Invoke(_record);
+            _recordInLevel = _score;
+            _records[_numberLevel] = _recordInLevel;
+            changeRecordEvent?.Invoke(_recordInLevel);
         }
     }
 }

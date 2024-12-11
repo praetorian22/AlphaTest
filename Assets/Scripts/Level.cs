@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Level : MonoBehaviour
 {
+    [SerializeField] private int number;
     [SerializeField] private int _errors;
     [SerializeField] private float _speedKoef;
     [SerializeField] private int _balls;
@@ -15,4 +16,5 @@ public class Level : MonoBehaviour
     public int Balls => _balls;
     public int MaxAlphaCount => _maxAlphaCount;
     public float SpeedKoef => _speedKoef;
+    public int Number => number;
 }
