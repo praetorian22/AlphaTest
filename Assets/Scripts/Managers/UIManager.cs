@@ -34,6 +34,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text _ballsLevel;
     [SerializeField] private TMP_Text _maxAlphaLevel;
     [SerializeField] private TMP_Text _timeLevel;
+    [SerializeField] private TMP_Text _recordPlayerLevel;
+
+    [SerializeField] private TMP_Text _endPanelBallsNeed;
+    [SerializeField] private TMP_Text _endPanelBallsRecord;
+    [SerializeField] private TMP_Text _congratulation;
 
     private bool _langSetter;
 
@@ -47,6 +52,7 @@ public class UIManager : MonoBehaviour
     public Action pressBackToMenuButtonEvent;
     public Action<bool> setLangEvent;
     public Action<Level> pressLevelSelect;
+    public Func<int,int> needRecordInLevelEvent;
 
     private void Start()
     {
@@ -76,6 +82,8 @@ public class UIManager : MonoBehaviour
                 _ballsLevel.text = level.Balls.ToString();
                 _maxAlphaLevel.text = level.MaxAlphaCount.ToString();
                 _timeLevel.text = level.TimeLevel.ToString();
+                int record = needRecordInLevelEvent.Invoke(level.Number);
+                _recordPlayerLevel.text = "(" + record.ToString() + ")";                
                 pressLevelSelect?.Invoke(level);
             });
         }
@@ -122,5 +130,13 @@ public class UIManager : MonoBehaviour
     public void SetBallsInLevel(int value)
     {
         _ballsInLevel.text = value.ToString();
+    }
+    public void EndPanelSet(bool win, Level level)
+    {
+        int record = needRecordInLevelEvent.Invoke(level.Number);
+        _endPanelBallsRecord.text = "(" + record.ToString() + ")";
+        _endPanelBallsNeed.text = level.Balls.ToString();
+        if (win) _congratulation.gameObject.SetActive(true);
+        else _congratulation.gameObject.SetActive(false);
     }
 }

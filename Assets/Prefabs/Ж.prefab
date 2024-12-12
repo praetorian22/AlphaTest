@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8498dcc67c690bd4bb87205d976a3ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionForce: 100
-  explosionRadius: 50
+  explosionForce: 200
+  explosionRadius: 2
 --- !u!1001 &1465841951178006933
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58,6 +58,10 @@ PrefabInstance:
     - target: {fileID: 1252955361285895403, guid: 447eb5cef072fd4449bb9d756123fea3, type: 3}
       propertyPath: m_Name
       value: Object
+      objectReference: {fileID: 0}
+    - target: {fileID: 7104195877031310999, guid: 447eb5cef072fd4449bb9d756123fea3, type: 3}
+      propertyPath: m_TagString
+      value: alphaMain
       objectReference: {fileID: 0}
     - target: {fileID: 8086951600789920934, guid: 447eb5cef072fd4449bb9d756123fea3, type: 3}
       propertyPath: m_LocalScale.x
@@ -111,6 +115,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8676596322532374284, guid: 447eb5cef072fd4449bb9d756123fea3, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 79c4f8eab4f23d046b6d1c1dd25ff735, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

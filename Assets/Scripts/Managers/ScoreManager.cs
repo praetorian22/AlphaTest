@@ -43,4 +43,8 @@ public class ScoreManager
             changeRecordEvent?.Invoke(_recordInLevel);
         }
     }
+    public int GetRecordInLevel(int levelNumber)
+    {
+        return _records[levelNumber];
+    }
 }

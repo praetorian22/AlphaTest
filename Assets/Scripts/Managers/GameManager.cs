@@ -21,8 +21,7 @@ public class GameManager : MonoBehaviour
     private Dictionary<int, List<string>> _dictCountAlphaLists = new Dictionary<int, List<string>>();    
     private Dictionary<string, GameObject> _dictAlphaPrefabs = new Dictionary<string, GameObject>();
     
-    private float koefSpeed = 1f;
-
+    
     [SerializeField] private UIManager uiManager;
     [SerializeField] private int _sizePool;
     [SerializeField] private int _startHealth;
@@ -75,6 +74,7 @@ public class GameManager : MonoBehaviour
         changeTimeInLevelEvent += uiManager.UpdateTimerInLevel;
         uiManager.pressLevelSelect += _levelManager.SelectLevel;
         uiManager.pressLevelSelect += (Level level) => ChangeState(GetState<SelectLevelState>());
+        uiManager.needRecordInLevelEvent += _scoreManager.GetRecordInLevel;
     }
     private void OnDisable()
     {
@@ -97,6 +97,7 @@ public class GameManager : MonoBehaviour
         changeTimeInLevelEvent -= uiManager.UpdateTimerInLevel;
         uiManager.pressLevelSelect -= _levelManager.SelectLevel;
         uiManager.pressLevelSelect -= (Level level) => ChangeState(GetState<SelectLevelState>());
+        uiManager.needRecordInLevelEvent -= _scoreManager.GetRecordInLevel;
     }
     
     private void Start()
@@ -200,7 +201,7 @@ public class GameManager : MonoBehaviour
             var renderers = alpha.GetComponentsInChildren<Renderer>();
             foreach (Renderer renderer in renderers)
             {
-                renderer.material.color = color;
+                if (renderer.gameObject.tag != "alphaMain") renderer.material.color = color;
             }
             return alpha;
         } 
@@ -248,6 +249,12 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         ChangeState(GetState<GameOverState>());
+        bool win;
+        int ballNeed = _levelManager.LevelSelected.Balls;
+        int ballPlayerRecord = _scoreManager.GetRecordInLevel(_levelManager.LevelSelected.Number);
+        if (ballPlayerRecord >= ballNeed) win = true;
+        else win = false;
+        uiManager.EndPanelSet(win, _levelManager.LevelSelected);
         if (_gameCoroutine != null) StopCoroutine(_gameCoroutine);
         if (_inputCoroutine != null) StopCoroutine(_inputCoroutine);
         if (_timerCoroutine != null) StopCoroutine(_timerCoroutine);
@@ -561,7 +568,7 @@ public class GameManager : MonoBehaviour
                 square.UpdateSpeed(_levelManager.LevelSelected.SpeedKoef);
                 square.gameObject.SetActive(true);                
             }
-            yield return new WaitForSeconds(_defaultTimeForRespawnSquade / koefSpeed);
+            yield return new WaitForSeconds(_defaultTimeForRespawnSquade / _levelManager.LevelSelected.SpeedKoef);
         }
     }
 
@@ -587,7 +594,7 @@ public class GameManager : MonoBehaviour
                                 {
                                     Vector3 position = square.DisableAlpha();
                                     GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
-                                    if (deadAlpha != null) deadAlpha.transform.position = position;
+                                    if (deadAlpha != null) deadAlpha.transform.position = new Vector3 (position.x, position.y, position.z - 1f);
                                     controllerSquare.ReturnToPool(square);
                                     trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
                                 }
@@ -595,7 +602,7 @@ public class GameManager : MonoBehaviour
                                 {
                                     Vector3 position = square.DisableAlpha();
                                     GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
-                                    if (deadAlpha != null) deadAlpha.transform.position = position;
+                                    if (deadAlpha != null) deadAlpha.transform.position = new Vector3(position.x, position.y, position.z - 1f);
                                     trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
                                 }
                             }

@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8498dcc67c690bd4bb87205d976a3ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionForce: 100
-  explosionRadius: 50
+  explosionForce: 200
+  explosionRadius: 2
 --- !u!1001 &6935561497135323498
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -55,6 +55,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2434080900074074815}
     m_Modifications:
+    - target: {fileID: 1099361027005743979, guid: 056c556d95b0c2348b34288cb9b10805, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 79c4f8eab4f23d046b6d1c1dd25ff735, type: 2}
     - target: {fileID: 2442677439333332268, guid: 056c556d95b0c2348b34288cb9b10805, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.3
@@ -110,6 +114,14 @@ PrefabInstance:
     - target: {fileID: 4705838087622228476, guid: 056c556d95b0c2348b34288cb9b10805, type: 3}
       propertyPath: m_Name
       value: Object
+      objectReference: {fileID: 0}
+    - target: {fileID: 4780656658227313224, guid: 056c556d95b0c2348b34288cb9b10805, type: 3}
+      propertyPath: m_TagString
+      value: alphaMain
+      objectReference: {fileID: 0}
+    - target: {fileID: 4817151265169838959, guid: 056c556d95b0c2348b34288cb9b10805, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

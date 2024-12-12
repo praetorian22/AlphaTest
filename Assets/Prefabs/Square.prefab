@@ -109,7 +109,7 @@ MonoBehaviour:
   _textAlphaPrefab: {fileID: 5659638174370554956, guid: 93452a3cbbd80c440bc4ce5cd7d38361, type: 3}
   _colorDisable:
     serializedVersion: 2
-    rgba: 4291348680
+    rgba: 4293980400
 --- !u!114 &7223083205117397350
 MonoBehaviour:
   m_ObjectHideFlags: 0

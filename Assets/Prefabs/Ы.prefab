@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -16.74, y: 0.24452731, z: 0}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3411631380562542609}
@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8498dcc67c690bd4bb87205d976a3ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionForce: 100
-  explosionRadius: 50
+  explosionForce: 200
+  explosionRadius: 2
 --- !u!1001 &2538383501950001746
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -111,6 +111,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6195768207518968896, guid: 1b3e20bfd8db68a409397e5ab39ad323, type: 3}
+      propertyPath: m_TagString
+      value: alphaMain
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428863790692829229, guid: 1b3e20bfd8db68a409397e5ab39ad323, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 79c4f8eab4f23d046b6d1c1dd25ff735, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

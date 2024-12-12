@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -16.74, y: 0.24452731, z: 0}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3653601478930755447}
@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8498dcc67c690bd4bb87205d976a3ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionForce: 100
-  explosionRadius: 50
+  explosionForce: 200
+  explosionRadius: 2
 --- !u!1001 &5186897314551652815
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -55,6 +55,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8963693740699185589}
     m_Modifications:
+    - target: {fileID: 2257369793566093805, guid: 66304c86bf596154e80d5d7b8831f65c, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 79c4f8eab4f23d046b6d1c1dd25ff735, type: 2}
+    - target: {fileID: 5240263658452763507, guid: 66304c86bf596154e80d5d7b8831f65c, type: 3}
+      propertyPath: m_TagString
+      value: alphaMain
+      objectReference: {fileID: 0}
     - target: {fileID: 7426472350787907483, guid: 66304c86bf596154e80d5d7b8831f65c, type: 3}
       propertyPath: m_Name
       value: Object

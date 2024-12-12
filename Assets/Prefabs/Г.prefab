@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8498dcc67c690bd4bb87205d976a3ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionForce: 100
-  explosionRadius: 50
+  explosionForce: 200
+  explosionRadius: 2
 --- !u!1001 &6433877427316049225
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -55,9 +55,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3152337549588331938}
     m_Modifications:
+    - target: {fileID: 500727220426621717, guid: 82224128bd837e94e97fce23c41b5a86, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 79c4f8eab4f23d046b6d1c1dd25ff735, type: 2}
     - target: {fileID: 1342654668217241367, guid: 82224128bd837e94e97fce23c41b5a86, type: 3}
       propertyPath: m_Name
       value: Object
+      objectReference: {fileID: 0}
+    - target: {fileID: 7486665390261793309, guid: 82224128bd837e94e97fce23c41b5a86, type: 3}
+      propertyPath: m_TagString
+      value: alphaMain
       objectReference: {fileID: 0}
     - target: {fileID: 7500760423924219655, guid: 82224128bd837e94e97fce23c41b5a86, type: 3}
       propertyPath: m_LocalScale.x

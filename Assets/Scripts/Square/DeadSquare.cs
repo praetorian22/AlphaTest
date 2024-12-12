@@ -17,7 +17,7 @@ public class DeadSquare : MonoBehaviour
             {
                 if (colliders[i].TryGetComponent(out Rigidbody rb))
                 {
-                    rb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
+                    rb.AddExplosionForce(explosionForce, new Vector3(transform.position.x + Random.Range(-2f, 2f), transform.position.y + Random.Range(-2f, 2f), transform.position.z), explosionRadius);
                     Destroy(rb.gameObject, Random.Range(3f, 10f));
                 }
             }
