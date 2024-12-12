@@ -58,7 +58,10 @@ public class UIManager : MonoBehaviour
     {
         _langSetter = true;
         ChangeLang();
-        _begin.onClick.AddListener(() => pressBeginButtonEvent?.Invoke());
+        _begin.onClick.AddListener(() => {
+            pressBeginButtonEvent?.Invoke();
+            ColorLevelMap();
+        });
         _goBackLevel.onClick.AddListener(() => pressBackToMapLevelButtonEvent?.Invoke());
         _goBackLevelMenu.onClick.AddListener(() => pressBackToMenuButtonEvent?.Invoke());
         _start.onClick.AddListener(() => pressStartGameButtonEvent?.Invoke());
@@ -88,17 +91,21 @@ public class UIManager : MonoBehaviour
             });
         }
     }
-    /*
-    private void ChangeLevel()
+    
+    public void ColorLevelMap()
     {
-        _levelSetter += 10;
-        if (_levelSetter > 21) _levelSetter = 1;
-        if (_levelSetter == 1) _levelChange.GetComponentInChildren<TMP_Text>().text = "À≈ √Œ";
-        if (_levelSetter == 11) _levelChange.GetComponentInChildren<TMP_Text>().text = "ÕŒ–Ã¿";
-        if (_levelSetter == 21) _levelChange.GetComponentInChildren<TMP_Text>().text = "—ÀŒ∆ÕŒ";
-        setLevelEvent?.Invoke(_levelSetter);
+        foreach (Button button in _selectLevelButtons)
+        {
+            int level = button.gameObject.GetComponent<Level>().Number;
+            int record = needRecordInLevelEvent.Invoke(level);
+            int ballNeed = button.gameObject.GetComponent<Level>().Balls;
+            if (record >= ballNeed)
+                button.gameObject.GetComponent<Image>().color = new Color32(0, 255, 150, 255);
+            else
+                button.gameObject.GetComponent<Image>().color = Color.white;
+        }
     }
-    */
+
     private void ChangeLang()
     {
         _langSetter = !_langSetter;
