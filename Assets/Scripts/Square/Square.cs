@@ -18,7 +18,8 @@ public class Square : MonoBehaviour
 
 
     public DataSquare dataSquare = new DataSquare();
-    public Action<Square> damageEvent;
+    public Action<Square> destroyEvent;
+    public Action<int> damageEvent;
     public int ID => _id;
     public void Init()
     {
@@ -73,6 +74,8 @@ public class Square : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        damageEvent?.Invoke(this);
+        int countAlpha = _listTextAlpha.Count - _indexAlpha;
+        damageEvent?.Invoke(countAlpha);        
+        destroyEvent?.Invoke(this);
     }
 }

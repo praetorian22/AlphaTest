@@ -583,36 +583,37 @@ public class GameManager : MonoBehaviour
                 {
                     Square square = null;
                     string alpha = Input.inputString.ToLower();
-                    if (lastAlpha != alpha)
+                    if (controllerSquare.CheckAlpha(alpha, out square))
                     {
-                        if (controllerSquare.CheckAlpha(alpha, out square))
+                        lastAlpha = alpha;
+                        if (square != null)
                         {
-                            lastAlpha = alpha;
-                            if (square != null)
+                            if (square.dataSquare.DeleteAlpha(alpha))
                             {
-                                if (square.dataSquare.DeleteAlpha(alpha))
-                                {
-                                    Vector3 position = square.DisableAlpha();
-                                    GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
-                                    if (deadAlpha != null) deadAlpha.transform.position = new Vector3 (position.x, position.y, position.z - 1f);
-                                    controllerSquare.ReturnToPool(square);
-                                    trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
-                                }
-                                else
-                                {
-                                    Vector3 position = square.DisableAlpha();
-                                    GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
-                                    if (deadAlpha != null) deadAlpha.transform.position = new Vector3(position.x, position.y, position.z - 1f);
-                                    trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
-                                }
+                                Vector3 position = square.DisableAlpha();
+                                GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
+                                if (deadAlpha != null) deadAlpha.transform.position = new Vector3 (position.x, position.y, position.z - 1f);
+                                controllerSquare.ReturnToPool(square);
+                                trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
+                            }
+                            else
+                            {
+                                Vector3 position = square.DisableAlpha();
+                                GameObject deadAlpha = CreateAlphaDead(alpha, square.dataSquare.Color);
+                                if (deadAlpha != null) deadAlpha.transform.position = new Vector3(position.x, position.y, position.z - 1f);
+                                trueAlphaInputEvent?.Invoke(square.dataSquare.Balls);
                             }
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (lastAlpha != alpha)
                         {
                             DecHealth(1);
                             lastAlpha = alpha;
-                        }
-                    }                    
+                        }                        
+                    }
+                                        
                 }                              
             }
             yield return null;

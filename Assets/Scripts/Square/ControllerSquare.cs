@@ -18,7 +18,7 @@ public class ControllerSquare
 
     public void ReturnToPool(Square square)
     {
-        square.damageEvent -= ReturnToPool;
+        square.destroyEvent -= ReturnToPool;
         _poolSquare.ReturnToPool(square);
         square.gameObject.SetActive(false);
         square.gameObject.transform.parent = _parentForPool;
@@ -38,7 +38,7 @@ public class ControllerSquare
         Square square = _poolSquare.TakeNextSquare(key);
         square.gameObject.transform.position = position;
         _activeSquare.Add(square);
-        square.damageEvent += ReturnToPool;
+        square.destroyEvent += ReturnToPool;
         return square;
     }
     public void SetPosition(Square square, int maxAlphaCount)

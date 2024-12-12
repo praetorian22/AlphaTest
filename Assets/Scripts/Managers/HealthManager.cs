@@ -32,6 +32,7 @@ public class HealthManager
             gameOverEvent?.Invoke();
         }
     }
+    /*
     public void DecHealth(Square square)
     {
         _health -= square.dataSquare.Damage;
@@ -41,4 +42,5 @@ public class HealthManager
             gameOverEvent?.Invoke();
         }
     }
+    */
 }
